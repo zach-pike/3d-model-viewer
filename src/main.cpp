@@ -22,7 +22,7 @@ GLFWwindow* window;
 #include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
 
-#include "parser/parser.hpp"
+#include "objparser/objparser.hpp"
 
 #include <istream>
 #include <fstream>
@@ -195,17 +195,23 @@ int main( void ) {
 
 	glUseProgram(programID);
 
-	std::ifstream f("../src/test.model");
-	ModelFileParser parser;
+	std::ifstream f("../Teapot.obj");
+	ObjParser parser;
 	parser.parse(f);
 
-	if (!parser.modelHasFeature(ModelFileParser::Features::VERTEX) 
-	|| !parser.modelHasFeature(ModelFileParser::Features::COLOR)) {
-		return 1;
-	}
+	// if (!parser.modelHasFeature(ModelFileParser::Features::VERTEX) 
+	// || !parser.modelHasFeature(ModelFileParser::Features::COLOR)) {
+	// 	return 1;
+	// }
 	
-    std::vector<Vertex> vertexBufferData = parser.vertexes;
-	std::vector<Color> colorBuffer = parser.colors;
+    std::vector<Vertex> vertexBufferData = parser.assembleToVertexes();
+	std::vector<Color> colorBuffer;
+
+	colorBuffer.resize(vertexBufferData.size());
+
+	for (int i=0; i < vertexBufferData.size(); i++) {
+		colorBuffer[i] = Color{ 1.f, 1.f, 1.f };
+	}
 	
 	GLuint vertexbuffer;
 	glGenBuffers(1, &vertexbuffer);
@@ -221,7 +227,7 @@ int main( void ) {
     using time_point = std::chrono::system_clock::time_point;
     long frameDelta = std::floor(1.f / 60.f) * 1000.f;
 
-	glEnable(GL_CULL_FACE);
+	// glEnable(GL_CULL_FACE);
 
 	do{
         time_point frameStart = std::chrono::system_clock::now();
