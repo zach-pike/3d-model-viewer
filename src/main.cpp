@@ -37,14 +37,14 @@ void setViewMat(glm::mat4& view, float pitch, float yaw, glm::vec3 pos) {
 	glm::vec3 lookVector;
 
 	lookVector.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    lookVector.y = sin(glm::radians(yaw)) * cos(glm::radians(pitch));;
-    lookVector.z = sin(glm::radians(pitch));
+    lookVector.y = sin(glm::radians(pitch));
+    lookVector.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
 
-	lookVector = glm::normalize(lookVector);
+    lookVector = glm::normalize(lookVector);
 
 	view = glm::lookAt(
 		pos,
-		lookVector,
+		pos + lookVector,
 		glm::vec3(0,1,0)
 	);
 }
@@ -112,7 +112,7 @@ int main( void )
 	glm::mat4 Model = glm::mat4(1.0f);
 
 	glm::vec3 worldPos = glm::vec3(4, 3, -3);
-	float pitch = 0.f;
+	float pitch = -30.f;
 	float yaw = 0.f;
 
 	setViewMat(View, pitch, yaw, worldPos);
@@ -153,7 +153,7 @@ int main( void )
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		pitch += 1.f;
+		yaw += 1.f;
 
 		setViewMat(View, pitch, yaw, worldPos);
 		glm::mat4 MVP = Projection * View * Model;
