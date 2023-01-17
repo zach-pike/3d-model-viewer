@@ -33,20 +33,105 @@ void bufferData(GLuint bufferId, std::vector<T>& data) {
     glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(T), data.data(), GL_STATIC_DRAW);
 }
 
-void setViewMat(glm::mat4& view, float pitch, float yaw, glm::vec3 pos) {
+glm::vec3 getLookVector(float pitch, float yaw) {
 	glm::vec3 lookVector;
 
 	lookVector.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
     lookVector.y = sin(glm::radians(pitch));
     lookVector.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
 
-    lookVector = glm::normalize(lookVector);
+    return glm::normalize(lookVector);
+}
+
+void setViewMat(glm::mat4& view, float pitch, float yaw, glm::vec3 pos) {
+	glm::vec3 lookVector = getLookVector(pitch, yaw);
 
 	view = glm::lookAt(
 		pos,
 		pos + lookVector,
 		glm::vec3(0,1,0)
 	);
+}
+
+glm::vec3 getRightVector(glm::vec3 lookVector) {
+	return glm::normalize(glm::cross(lookVector, glm::vec3(0.0f, 1.0f, 0.0f)));
+}
+
+void cameraManager(glm::mat4& view, GLFWwindow* win) {
+	static float pitch = 0.f;
+	static float yaw = 0.f;
+
+	static glm::vec3 pos = glm::vec3(4, 3, -3);
+
+	static const float sensitvity = 0.25f;
+	static const float moveSpeed = .5f;
+
+
+	static bool lockMouse = true;
+	static bool eKeyReleased = true;
+	static bool firstRun = true;
+
+	static int winX;
+	static int winY;
+
+	if (firstRun) {
+		glfwGetWindowSize(win, &winX, &winY);
+
+		firstRun = false;
+	}
+
+	if (glfwGetKey(win, GLFW_KEY_E) == GLFW_PRESS) {
+		if (eKeyReleased == true) {
+			// If the mouse is being unlocked, set the cursor to the middle of the screen before the update
+			if (!lockMouse) glfwSetCursorPos(win, (float)winX / 2.f, (float)winY / 2.f);
+
+			lockMouse = !lockMouse;
+			eKeyReleased = false;
+		}
+	} else eKeyReleased = true;
+
+	if (lockMouse) {
+		double mouseX;
+		double mouseY;
+		
+		// Get the cursor
+		glfwGetCursorPos(win, &mouseX, &mouseY);
+
+		// reset cursor to middle of screen
+		glfwSetCursorPos(win, (float)winX / 2.f, (float)winY / 2.f);
+
+		double movedX = mouseX - ((float)winX / 2.f);
+		double movedY = mouseY - ((float)winY / 2.f);
+
+		pitch -= movedY * sensitvity;
+		yaw += movedX * sensitvity;
+
+		if (glfwGetKey(win, GLFW_KEY_W) == GLFW_PRESS) {
+			glm::vec3 look = getLookVector(pitch, yaw);
+			look *= moveSpeed;
+
+			pos += look;
+		} else if (glfwGetKey(win, GLFW_KEY_S) == GLFW_PRESS) {
+			glm::vec3 look = getLookVector(pitch, yaw);
+			look *= moveSpeed;
+
+			pos += -look;
+		} else if (glfwGetKey(win, GLFW_KEY_D) == GLFW_PRESS) {
+			glm::vec3 look = getLookVector(pitch, yaw);
+			look *= moveSpeed;
+			look = getRightVector(look);
+
+			pos += look;
+		} else if (glfwGetKey(win, GLFW_KEY_A) == GLFW_PRESS) {
+			glm::vec3 look = getLookVector(pitch, yaw);
+			look *= moveSpeed;
+			look = getRightVector(look);
+
+			pos += -look;
+		}
+
+		setViewMat(view, pitch, yaw, pos);
+	}
 }
 
 int main( void )
@@ -111,14 +196,6 @@ int main( void )
 	glm::mat4 View;
 	glm::mat4 Model = glm::mat4(1.0f);
 
-	glm::vec3 worldPos = glm::vec3(4, 3, -3);
-	float pitch = -30.f;
-	float yaw = 0.f;
-
-	setViewMat(View, pitch, yaw, worldPos);
-
-	glm::mat4 MVP = Projection * View * Model;
-
 	glUseProgram(programID);
 
 	std::ifstream f("../src/test.model");
@@ -153,9 +230,7 @@ int main( void )
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		yaw += 1.f;
-
-		setViewMat(View, pitch, yaw, worldPos);
+		cameraManager(View, window);
 		glm::mat4 MVP = Projection * View * Model;
 
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
