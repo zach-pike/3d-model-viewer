@@ -66,7 +66,6 @@ void cameraManager(glm::mat4& view, GLFWwindow* win) {
 	static const float sensitvity = 0.25f;
 	static const float moveSpeed = .5f;
 
-
 	static bool lockMouse = true;
 	static bool eKeyReleased = true;
 	static bool firstRun = true;
@@ -118,15 +117,15 @@ void cameraManager(glm::mat4& view, GLFWwindow* win) {
 			pos += -look;
 		} else if (glfwGetKey(win, GLFW_KEY_D) == GLFW_PRESS) {
 			glm::vec3 look = getLookVector(pitch, yaw);
-			look *= moveSpeed;
 			look = getRightVector(look);
+			look *= moveSpeed;
 
 			pos += look;
 		} else if (glfwGetKey(win, GLFW_KEY_A) == GLFW_PRESS) {
 			glm::vec3 look = getLookVector(pitch, yaw);
-			look *= moveSpeed;
 			look = getRightVector(look);
-
+			look *= moveSpeed;
+			
 			pos += -look;
 		}
 
@@ -134,11 +133,9 @@ void cameraManager(glm::mat4& view, GLFWwindow* win) {
 	}
 }
 
-int main( void )
-{
+int main( void ) {
 	// Initialise GLFW
-	if(!glfwInit())
-	{
+	if(!glfwInit()) {
 		fprintf( stderr, "Failed to initialize GLFW\n" );
 		getchar();
 		return -1;
@@ -192,7 +189,7 @@ int main( void )
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 
 	// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-	glm::mat4 Projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+	glm::mat4 Projection = glm::perspective(glm::radians(70.0f), 4.0f / 3.0f, 0.1f, 100.0f);
 	glm::mat4 View;
 	glm::mat4 Model = glm::mat4(1.0f);
 
@@ -210,7 +207,6 @@ int main( void )
     std::vector<Vertex> vertexBufferData = parser.vertexes;
 	std::vector<Color> colorBuffer = parser.colors;
 	
-
 	GLuint vertexbuffer;
 	glGenBuffers(1, &vertexbuffer);
 	
@@ -224,6 +220,8 @@ int main( void )
 	// Some variables
     using time_point = std::chrono::system_clock::time_point;
     long frameDelta = std::floor(1.f / 60.f) * 1000.f;
+
+	glEnable(GL_CULL_FACE);
 
 	do{
         time_point frameStart = std::chrono::system_clock::now();
