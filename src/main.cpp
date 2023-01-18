@@ -22,6 +22,7 @@ GLFWwindow* window;
 #include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
 
+#include "parser/parser.hpp"
 #include "objparser/objparser.hpp"
 
 #include <istream>
@@ -49,7 +50,7 @@ void setViewMat(glm::mat4& view, float pitch, float yaw, glm::vec3 pos) {
 	view = glm::lookAt(
 		pos,
 		pos + lookVector,
-		glm::vec3(0,1,0)
+		glm::vec3(0, 1, 0)
 	);
 }
 
@@ -206,12 +207,12 @@ int main( void ) {
 	
     std::vector<Vertex> vertexBufferData = parser.assembleToVertexes();
 	std::vector<Color> colorBuffer;
-
 	colorBuffer.resize(vertexBufferData.size());
 
 	for (int i=0; i < vertexBufferData.size(); i++) {
-		colorBuffer[i] = Color{ 1.f, 1.f, 1.f };
+		colorBuffer[i] = (Color{ 1.f, 1.f, 1.f });
 	}
+
 	
 	GLuint vertexbuffer;
 	glGenBuffers(1, &vertexbuffer);
@@ -227,7 +228,7 @@ int main( void ) {
     using time_point = std::chrono::system_clock::time_point;
     long frameDelta = std::floor(1.f / 60.f) * 1000.f;
 
-	// glEnable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
 
 	do{
         time_point frameStart = std::chrono::system_clock::now();
